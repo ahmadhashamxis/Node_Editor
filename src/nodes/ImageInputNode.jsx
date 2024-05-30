@@ -4,6 +4,7 @@ import { Handle, Position } from "reactflow";
 
 const ImageInputNode = ({ data }) => {
   const [image, setImage] = useState(null);
+
   const onImageChange = useCallback(
     (event) => {
       if (event.target.files && event.target.files[0]) {
@@ -12,7 +13,7 @@ const ImageInputNode = ({ data }) => {
         const reader = new FileReader();
         reader.onload = () => {
           setImage(reader.result);
-        }
+        };
         reader.readAsDataURL(file);
       }
     },
@@ -20,11 +21,35 @@ const ImageInputNode = ({ data }) => {
   );
 
   return (
-    <div>
-      <input type="file" accept="image/*" onChange={onImageChange} />
-    
-      {image && <img src={image} alt="uploaded" style={{ width: "100px" }} />}
-      <Handle type="source" position={Position.right} />
+    <div className="w-[300px] bg-gradient-to-br from-blue-100 to-purple-200 p-8 rounded-3xl shadow-md">
+      <label className="block text-center mb-2">
+        <span className=" bg-gradient-to-br from-blue-400 to-purple-300 hover:from-blue-500 hover:to-purple-400 text-white font-bold py-2 px-4 rounded cursor-pointer">
+          Upload Image
+        </span>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={onImageChange}
+          className="hidden "
+        />
+      </label>
+
+      {image && (
+        <img
+          src={image}
+          alt="uploaded"
+          style={{
+            width: "250px",
+            display: "block",
+            margin: "0 auto",
+            borderRadius: "4px",
+            height: "250px",
+           
+          }}
+          className="mt-6"
+        />
+      )}
+      <Handle type="source" position={Position.Right} />
     </div>
   );
 };
