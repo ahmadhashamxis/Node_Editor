@@ -14,12 +14,30 @@ CORS(app, origins=['*'])
 model = YOLO('./model.pt')
 model2 = YOLO('./yolov8n.pt')
 
+
+@app.route('/detectAnomaly', methods=['POST'])
+def detectAnomaly():
+    if 'image' not in request.files:
+        return jsonify({"error": "No image provided"}), 400
+    try:
+       
+        image_file = request.files['image']
+        print(image_file)
+         # Convert image to base64
+         # Here we're just converting it to base64 for demonstration purposes
+        image_base64 = base64.b64encode(image_file.read()).decode('utf-8')
+
+        return jsonify({"detectedImage": image_base64})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
 @app.route('/detect', methods=['POST'])
 def detect():
     if 'image' not in request.files:
         return jsonify({"error": "No image provided"}), 400
     try:
         image_file = request.files['image']
+        print(image_file)
         image = Image.open(image_file)
         image_array = np.array(image)
 

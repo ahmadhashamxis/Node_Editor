@@ -1,12 +1,12 @@
 import PropTypes from "prop-types";
 import { Handle, Position } from "reactflow";
 
-const DetectNode = () => {
+const AnomalyNode = () => {
   return (
     <div>
-    <div className="text-center rounded-md w-[200px] h-[200px] bg-gradient-to-br from-blue-200  to-purple-400 p-6 border border-purple-500">
-      <h3 className="mt-[40%] text-white text-2xl  ">
-        Detection
+    <div className="text-center rounded-md w-[250px] h-[250px] bg-gradient-to-br from-blue-200  to-purple-400 p-6 border border-purple-500">
+      <h3 className="mt-[30%] text-white text-2xl ">
+        Anomaly Detection
       </h3>
      
     </div>
@@ -16,11 +16,11 @@ const DetectNode = () => {
   );
 };
 
-DetectNode.propTypes = {
+AnomalyNode.propTypes = {
   data: PropTypes.shape({
     image: PropTypes.instanceOf(File),
     onDetection: PropTypes.func.isRequired,
   }).isRequired,
 };
 
-export default DetectNode;
+export default AnomalyNode;
