@@ -160,7 +160,7 @@ const Flow = () => {
         const sourceNode = nodes.find(node => node.id === params.source);
     
 
-        if (params.source === "1" && (targetNode.type === 'modelProvider' || targetNode.type === 'detect')) {
+        if (sourceNode.type === 'imageInput' && (targetNode.data.code === 'Od' || targetNode.type === 'detect')) {
          
           // const n = nodes.find((node) => node.id === "2");
           // const image = n?.data.image;
@@ -170,33 +170,39 @@ const Flow = () => {
           setCurrentNodeId(params.target);
         }
 
-        if ((sourceNode.type === "modelProvider" || sourceNode.type === "detect" ) && params.target === "3") {
+        if ((sourceNode.data.code === 'Od' || sourceNode.type === "detect" ) && targetNode.type === "switcher") {
           console.log(result);
-          handleDetection(result, "3");
-        }
-        if (params.source === "3" && params.target === "4") {
-          handleDetection(result, "4");
+          handleDetection(result, targetNode.id);
         }
 
-        if (params.source === "4" && params.target === "5") {
-          const n = nodes.find((node) => node.id === "4");
-          const image = n?.data.detectedImage;
+        if ((sourceNode.data.code === 'Od' || sourceNode.type === "detect" ) && targetNode.type === "orientation") {
+          console.log(result);
+          handleDetection(result, targetNode.id);
+        }
 
+        if (sourceNode.type === "switcher" && targetNode.type === "orientation") {
+          handleDetection(result, targetNode.id);
+        }
+
+        if (sourceNode.type === "orientation"  && ( targetNode.data.code === 'Ad'|| targetNode.type === 'anomaly')) {
+          // const n = nodes.find((node) => node.id === "4");
+          const image = sourceNode?.data.detectedImage;
+         
+          setCurrentNodeId(targetNode.id);
           urlToBlob(image).then((imageBlob) => {
             if (imageBlob) {
-              // Now you have the image as a Blob
-              // You can pass it to your backend model
+              
               console.log(imageBlob);
-              triggerBackendAnomalyRequest(imageBlob);
+              triggerBackendAnomalyRequest(imageBlob, targetNode.id);
             } else {
               console.error("No image blob received");
             }
           });
         }
 
-        if (params.source === "5" && params.target === "6") {
-          const n = nodes.find((node) => node.id === "5");
-          const image = n?.data.image;
+        if ((sourceNode.data.code === 'Ad'|| sourceNode.type === "anomaly" )  && targetNode.type === "outputNode") {
+          // const n = nodes.find((node) => node.id === "5");
+          const image = sourceNode?.data.image;
           setAnomalyResult(image);
         }
 
@@ -343,7 +349,7 @@ const Flow = () => {
     }
   };
 
-  const triggerBackendAnomalyRequest = (imageBlob) => {
+  const triggerBackendAnomalyRequest = (imageBlob, nodeId) => {
     if (imageBlob) {
       const formData = new FormData();
       formData.append("image", imageBlob, "image.jpg");
@@ -361,10 +367,10 @@ const Flow = () => {
           );
           const detectedImageUrl = URL.createObjectURL(detectedImageBlob);
           console.log("done2", detectedImageUrl);
-
+      
           setNodes((nds) =>
             nds.map((node) => {
-              if (node.id === "5") {
+              if (node.id === nodeId) {
                 node.data = { ...node.data, image: detectedImageUrl };
               }
               return node;
@@ -392,7 +398,7 @@ const Flow = () => {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-blue-100  to-purple-300 ">
+
         <div
           style={{
             width: "100vw",
@@ -416,7 +422,7 @@ const Flow = () => {
         </div>
 
         <Footer image={anomalyResult} />
-      </div>
+      
     </>
   );
 };
