@@ -9,10 +9,10 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import axios from "axios";
 import ImageInputNode from "../nodes/ImageInputNode";
-import DetectNode from "../nodes/DetectNode";
+
 import Switcher from "../nodes/Switcher";
 import OrientationNode from "../nodes/OrientationNode";
-import AnomalyNode from "../nodes/AnomalyNode";
+
 import OutputNode from "../nodes/OutputNode";
 import Footer from "./Footer";
 import NodeSelect from "../nodes/NodeSelect";
@@ -21,17 +21,18 @@ import ModelProvider from "../nodes/modelProvider"
 
 const nodeTypes = {
   imageInput: ImageInputNode,
-  detect: DetectNode,
+
   switcher: Switcher,
   orientation: OrientationNode,
-  anomaly: AnomalyNode,
+  // anomaly: AnomalyNode,
+  // detect: DetectNode,
   outputNode: OutputNode,
   nodeSelector: NodeSelect,
   modelProvider: ModelProvider
   // VideoInput: WebcamInputNode,
 };
 
-const Flow = () => {
+const Flow = ({projectType}) => {
   const base64ToBlob = (base64Data, contentType = "") => {
     const sliceSize = 512;
     const byteCharacters = atob(base64Data);
@@ -50,62 +51,85 @@ const Flow = () => {
     return new Blob(byteArrays, { type: contentType });
   };
 
-  const [nodes, setNodes] = useState([
-    {
-      id: "0",
-      data: {},
-      position: { x: 440, y: 20 },
-      type: "nodeSelector",
-    },
-    {
-      id: "1",
-      type: "imageInput",
-      position: { x: 100, y: 70 },
-      data: { onImageUpload: (image) => handleImageUpload(image) },
-    },
-    {
-      id: "2",
-      type: "detect",
-      position: { x: 700, y: 100 },
-      data: {
-        image: null,
-      },
-    },
-    {
-      id: "3",
-      type: "switcher",
-      position: { x: 1200, y: 90 },
-      data: { detectedImage: null, edges: [] },
-    },
-    {
-      id: "4",
-      type: "orientation",
-      position: { x: 1700, y: 115 },
-      data: { detectedImage: null },
-    },
-    {
-      id: "5",
-      type: "anomaly",
-      position: { x: 2200, y: 65 },
-      data: {
-        image: null,
-      },
-    },
-    {
-      id: "6",
-      type: "outputNode",
-      position: { x: 2700, y: 115 },
-      data: { detectedImage: null },
-    },
-    
  
-    // {
-    //   id: '4',
-    //   type: 'VideoInput',
-    //   position: { x: 100, y: 600 },
-    //   data: { onVideoUpload: (video) => handleVideoUpload(video) },
-    // },
-  ]);
+  
+  const [nodes, setNodes] = useState(() => {
+    if (projectType === 1) {
+      return [
+        {
+          id: "a",
+          data: {},
+          position: { x: 560, y: 20 },
+          type: "nodeSelector",
+        },
+        {
+          id: "b",
+          type: "imageInput",
+          position: { x: 100, y: 70 },
+          data: { onImageUpload: (image) => handleImageUpload(image) },
+        },
+        {
+          id: "c",
+          type: "outputNode",
+          position: { x: 900, y: 115 },
+          data: { detectedImage: null },
+        },
+      ];
+    } else {
+      return [
+        {
+          id: "0",
+          data: {},
+          position: { x: 450, y: 20 },
+          type: "nodeSelector",
+        },
+        {
+          id: "1",
+          type: "imageInput",
+          position: { x: 100, y: 70 },
+          data: { onImageUpload: (image) => handleImageUpload(image) },
+        },
+        {
+          id: "2",
+          type: "modelProvider",
+          position: { x: 700, y: 100 },
+          data: {
+            image: null,
+            name: 'Detection',
+            code: 'Od',
+          },
+        },
+        {
+          id: "3",
+          type: "switcher",
+          position: { x: 1200, y: 90 },
+          data: { detectedImage: null },
+        },
+        {
+          id: "4",
+          type: "orientation",
+          position: { x: 1700, y: 115 },
+          data: { detectedImage: null },
+        },
+        {
+          id: "5",
+          type: "modelProvider",
+          position: { x: 2200, y: 65 },
+          data: {
+            image: null,
+            name: 'Anomaly Detection',
+            code: 'Ad',
+          },
+        },
+        {
+          id: "6",
+          type: "outputNode",
+          position: { x: 2700, y: 115 },
+          data: { detectedImage: null },
+        },
+      ];
+    }
+  });
 
 
   const [edges, setEdges] = useState([]);
@@ -171,12 +195,12 @@ const Flow = () => {
         }
 
         if ((sourceNode.data.code === 'Od' || sourceNode.type === "detect" ) && targetNode.type === "switcher") {
-          console.log(result);
+          // console.log(result);
           handleDetection(result, targetNode.id);
         }
 
         if ((sourceNode.data.code === 'Od' || sourceNode.type === "detect" ) && targetNode.type === "orientation") {
-          console.log(result);
+          // console.log(result);
           handleDetection(result, targetNode.id);
         }
 
@@ -192,7 +216,7 @@ const Flow = () => {
           urlToBlob(image).then((imageBlob) => {
             if (imageBlob) {
               
-              console.log(imageBlob);
+              // console.log(imageBlob);
               triggerBackendAnomalyRequest(imageBlob, targetNode.id);
             } else {
               console.error("No image blob received");
@@ -332,7 +356,7 @@ const Flow = () => {
           );
           const detectedImageUrl = URL.createObjectURL(detectedImageBlob);
           setResult(detectedImageUrl);
-          console.log(currentNodeId)
+          // console.log(currentNodeId)
           setNodes((nds) =>
             nds.map((node) => {
               if (node.id === currentNodeId) {
@@ -341,7 +365,7 @@ const Flow = () => {
               return node;
             })
           );
-          console.log("done", result);
+          console.log("done");
         })
         .catch((error) => {
           console.error("There was an error detecting objects!", error);
@@ -366,7 +390,7 @@ const Flow = () => {
             "image/jpeg"
           );
           const detectedImageUrl = URL.createObjectURL(detectedImageBlob);
-          console.log("done2", detectedImageUrl);
+          console.log("done2");
       
           setNodes((nds) =>
             nds.map((node) => {

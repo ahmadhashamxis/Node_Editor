@@ -64,12 +64,12 @@ const OutputNode = ({ data }) => {
   );
 };
 
-OutputNode.propTypes = {
-  data: PropTypes.shape({
-    processedFrames: PropTypes.arrayOf(PropTypes.string).isRequired,
-    detectedImage: PropTypes.string,
-    edges: PropTypes.array.isRequired,
-  }).isRequired,
-};
+// OutputNode.propTypes = {
+//   data: PropTypes.shape({
+//     processedFrames: PropTypes.arrayOf(PropTypes.string).isRequired,
+//     detectedImage: PropTypes.string,
+//     edges: PropTypes.array.isRequired,
+//   }).isRequired,
+// };
 
 export default OutputNode;

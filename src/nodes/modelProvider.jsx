@@ -3,9 +3,6 @@ import PropTypes from 'prop-types';
 
 import { Handle, Position, useReactFlow } from "reactflow";
 
-
-
-
 const ModelProvider = ({ data: { name, image }, id }) => {
   return (
     <div>

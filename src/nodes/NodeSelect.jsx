@@ -5,21 +5,30 @@ import { useState } from 'react';
 const model_NODES = [
   { code: "Od", name: "Object Detection" },
   { code: "Ad", name: "Anomaly Detection" },
+  { code: "Sw", name: "Switcher" },
+  { code: "Oc", name: "Orientation Correction" },
 ];
 
 export default function NodeSelect() {
   const { setNodes } = useReactFlow();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const onProviderClick = ({ name, code, image}) => {
+  const onProviderClick = ({ name, code, image, detectedImage}) => {
     const location = Math.random() * 500;
+    const data = {
+      name,
+      code,
+      ...((code === 'Sw' || code === 'Oc')  ? { detectedImage } : { image }), // Conditionally include detectedImage or image
+    };
+
+    const type = `${code === 'Sw' ? 'switcher' : code === 'Oc' ? 'orientation' : 'modelProvider'}`;
 
     setNodes((prevNodes) => [
       ...prevNodes,
       {
         id: `${prevNodes.length + 1}`,
-        data: { name, code, image},
-        type: "modelProvider",
+        data: data,
+        type: type,
         position: { x: location, y: location },
       },
     ]);
@@ -31,10 +40,10 @@ export default function NodeSelect() {
       <div>
         <button
           type="button"
-          className="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          className="bg-gradient-to-br from-blue-400 text-xl  to-purple-300 hover:from-blue-500 hover:to-purple-400  text-white inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium  hover:bg-gray-50 "
           onClick={() => setMenuOpen(!menuOpen)}
         >
-          Add Models
+          ADD NODES
      
         </button>
       </div>
@@ -58,3 +67,4 @@ export default function NodeSelect() {
     </div>
   );
 }
+

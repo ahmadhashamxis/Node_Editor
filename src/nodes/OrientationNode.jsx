@@ -5,7 +5,7 @@ const OrientationNode = () => {
   return (
     <div>
     <div className="text-center rounded-md w-[200px] h-[150px] bg-gradient-to-br from-blue-200  to-purple-200 p-6">
-      <h3 className="mt-[10%] text-balck text-2xl font-semibold ">
+      <h3 className="mt-[10%] text-purple-800 text-2xl font-semibold ">
         Orientation Correction
       </h3>
      
@@ -19,7 +19,6 @@ const OrientationNode = () => {
 OrientationNode.propTypes = {
   data: PropTypes.shape({
     image: PropTypes.string,
-    onDetection: PropTypes.func.isRequired,
   }).isRequired,
 };
 

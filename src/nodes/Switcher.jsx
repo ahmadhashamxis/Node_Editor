@@ -7,7 +7,7 @@ const Switcher = ({ data }) => {
 
   return (
     <div className="bg-gradient-to-br from-blue-100 to-purple-200 text-center p-4  text-black text-2xl font-semibold rounded-3xl w-[200px] h-[200px]">
-      <p className="mt-[40%]">Switcher</p>
+      <p className="mt-[40%] text-purple-800">Switcher</p>
       {/* {data.detectedImage && (
         <img
           src={data.detectedImage}
@@ -25,7 +25,6 @@ const Switcher = ({ data }) => {
 Switcher.propTypes = {
   data: PropTypes.shape({
     detectedImage: PropTypes.string,
-    edges: PropTypes.array.isRequired,
   }).isRequired,
 };
 
