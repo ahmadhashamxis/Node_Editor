@@ -18,6 +18,7 @@ import Footer from "./Footer";
 import NodeSelect from "../nodes/NodeSelect";
 import ModelProvider from "../nodes/modelProvider"
 // import WebcamInputNode from '../nodes/WebcamNode';
+import Modal from "./Modal"; 
 
 const nodeTypes = {
   imageInput: ImageInputNode,
@@ -114,15 +115,25 @@ const Flow = ({projectType}) => {
         {
           id: "5",
           type: "modelProvider",
-          position: { x: 2200, y: 65 },
+          position: { x: 2200, y: 50 },
           data: {
             image: null,
-            name: 'Anomaly Detection',
+            name: 'Anomaly Detection (Front)',
             code: 'Ad',
           },
         },
         {
           id: "6",
+          type: "modelProvider",
+          position: { x: 2200, y: 300 },
+          data: {
+            image: null,
+            name: 'Anomaly Detection (Back)',
+            code: 'Ad',
+          },
+        },
+        {
+          id: "7",
           type: "outputNode",
           position: { x: 2700, y: 115 },
           data: { detectedImage: null },
@@ -138,6 +149,8 @@ const Flow = ({projectType}) => {
   const [inputImage, setInputImage] = useState(null);
   const [shouldTriggerRequest, setShouldTriggerRequest] = useState(false);
   const [currentNodeId, setCurrentNodeId] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userInput, setUserInput] = useState("");
 
   const frameCaptureInterval = useRef(null);
   const updateOutputNodeEdges = useCallback((newEdges) => {
@@ -196,16 +209,36 @@ const Flow = ({projectType}) => {
 
         if ((sourceNode.data.code === 'Od' || sourceNode.type === "detect" ) && targetNode.type === "switcher") {
           // console.log(result);
+          console.log("Opening modal..."); // Add this line to log modal opening
+          
+          setIsModalOpen(true);
           handleDetection(result, targetNode.id);
+          //userInput
         }
 
         if ((sourceNode.data.code === 'Od' || sourceNode.type === "detect" ) && targetNode.type === "orientation") {
           // console.log(result);
+          
           handleDetection(result, targetNode.id);
         }
 
         if (sourceNode.type === "switcher" && targetNode.type === "orientation") {
           handleDetection(result, targetNode.id);
+        }
+
+        if (sourceNode.type === "switcher" && targetNode.data.code === 'Ad') {
+          const image = sourceNode?.data.detectedImage;
+          newEdge.style = { stroke: 'red' }; 
+          setCurrentNodeId(targetNode.id);
+          urlToBlob(image).then((imageBlob) => {
+            if (imageBlob) {
+              
+              // console.log(imageBlob);
+              triggerBackendAnomalyRequest(imageBlob, targetNode.id);
+            } else {
+              console.error("No image blob received");
+            }
+          });
         }
 
         if (sourceNode.type === "orientation"  && ( targetNode.data.code === 'Ad'|| targetNode.type === 'anomaly')) {
@@ -243,6 +276,10 @@ const Flow = ({projectType}) => {
     },
     [nodes, result, updateOutputNodeEdges]
   );
+
+  const handleModalSubmit = (input) => {
+    setUserInput(input);
+  };
 
   useEffect(() => {
     console.log(nodes);
@@ -446,7 +483,11 @@ const Flow = ({projectType}) => {
         </div>
 
         <Footer image={anomalyResult} />
-      
+        <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleModalSubmit}
+      />
     </>
   );
 };
