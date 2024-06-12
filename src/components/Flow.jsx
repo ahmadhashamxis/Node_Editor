@@ -99,22 +99,24 @@ const Flow = ({projectType}) => {
             code: 'Od',
           },
         },
+       
         {
           id: "3",
-          type: "switcher",
-          position: { x: 1200, y: 90 },
+          type: "orientation",
+          position: { x: 1200, y: 130 },
+        
           data: { detectedImage: null },
         },
         {
           id: "4",
-          type: "orientation",
-          position: { x: 1700, y: 115 },
+          type: "switcher",
+          position: { x: 1700, y: 100 },
           data: { detectedImage: null },
         },
         {
           id: "5",
           type: "modelProvider",
-          position: { x: 2200, y: 65 },
+          position: { x: 2200, y: 100 },
           data: {
             image: null,
             name: 'Anomaly Detection',
@@ -138,6 +140,7 @@ const Flow = ({projectType}) => {
   const [inputImage, setInputImage] = useState(null);
   const [shouldTriggerRequest, setShouldTriggerRequest] = useState(false);
   const [currentNodeId, setCurrentNodeId] = useState(null);
+   const [values, setValues] = useState(null);
 
   const frameCaptureInterval = useRef(null);
   const updateOutputNodeEdges = useCallback((newEdges) => {
@@ -195,20 +198,29 @@ const Flow = ({projectType}) => {
         }
 
         if ((sourceNode.data.code === 'Od' || sourceNode.type === "detect" ) && targetNode.type === "switcher") {
-          // console.log(result);
+         
+              
           handleDetection(result, targetNode.id);
         }
 
         if ((sourceNode.data.code === 'Od' || sourceNode.type === "detect" ) && targetNode.type === "orientation") {
-          // console.log(result);
-          handleDetection(result, targetNode.id);
+          const image = sourceNode?.data.image;
+          urlToBlob(image).then((imageBlob) => {
+            if (imageBlob) {
+              rotateImage(imageBlob, targetNode.id)
+            }
+          });
         }
 
         if (sourceNode.type === "switcher" && targetNode.type === "orientation") {
           handleDetection(result, targetNode.id);
         }
 
-        if (sourceNode.type === "orientation"  && ( targetNode.data.code === 'Ad'|| targetNode.type === 'anomaly')) {
+        if (sourceNode.type === "orientation" && targetNode.type === "switcher") {
+          handleDetection(result, targetNode.id);
+        }
+
+        if (sourceNode.type === "switcher"  && ( targetNode.data.code === 'Ad'|| targetNode.type === 'anomaly')) {
           // const n = nodes.find((node) => node.id === "4");
           const image = sourceNode?.data.detectedImage;
          
@@ -287,6 +299,7 @@ const Flow = ({projectType}) => {
   };
 
   const handleDetection = (detectedImage, nId) => {
+
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === nId) {
@@ -350,12 +363,14 @@ const Flow = ({projectType}) => {
           },
         })
         .then((response) => {
+     
           const detectedImageBlob = base64ToBlob(
             response.data.detectedImage,
             "image/jpeg"
           );
           const detectedImageUrl = URL.createObjectURL(detectedImageBlob);
           setResult(detectedImageUrl);
+          setValues(response.data.value);
           // console.log(currentNodeId)
           setNodes((nds) =>
             nds.map((node) => {
@@ -373,11 +388,46 @@ const Flow = ({projectType}) => {
     }
   };
 
+  const rotateImage = (imageBlob, nodeId) => {
+    if (imageBlob) {
+      const formData = new FormData();
+      formData.append("image", imageBlob, "image.jpg");
+      axios
+        .post("http://localhost:5000/rotate", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        })
+        .then((response) => {
+    
+          const rotatedImageBlob = base64ToBlob(
+            response.data.rotatedImage,
+            "image/jpeg"
+          );
+          const rotatedImageUrl = URL.createObjectURL(rotatedImageBlob);
+         
+          setResult(rotatedImageUrl);
+          console.log("orientation fixed");
+          setNodes((nds) =>
+            nds.map((node) => {
+              if (node.id === nodeId) {
+                node.data = { ...node.data, detectedImage: rotatedImageUrl };
+              }
+              return node;
+            })
+          );
+        })
+        .catch((error) => {
+          console.error("There was an error in rotation!", error);
+        });
+    }
+  };
+
   const triggerBackendAnomalyRequest = (imageBlob, nodeId) => {
     if (imageBlob) {
       const formData = new FormData();
       formData.append("image", imageBlob, "image.jpg");
-
+      formData.append('values', values);
       axios
         .post("http://localhost:5000/detectAnomaly", formData, {
           headers: {
@@ -385,6 +435,7 @@ const Flow = ({projectType}) => {
           },
         })
         .then((response) => {
+     
           const detectedImageBlob = base64ToBlob(
             response.data.detectedImage,
             "image/jpeg"
